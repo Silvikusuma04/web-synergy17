@@ -101,7 +101,7 @@ const SolutionContent = () => (
     <div className="prose lg:prose-lg max-w-none text-deep-sea-blue/80">
       <h3>Mangrove Booster: A Nature Based Innovation</h3>
       <p>
-        To address this threat, our project introduces 'Mangrove Booster,' a nature based solution to enhance growth and resilience. This innovation, available in <strong>Granule and Liquid Form</strong>, works by:
+        To address this threat, our project introduces &apos;Mangrove Booster,&apos; a nature based solution to enhance growth and resilience. This innovation, available in <strong>Granule and Liquid Form</strong>, works by:
       </p>
       <ul>
         <li>Promoting healthier, more resilient mangrove ecosystems.</li>
