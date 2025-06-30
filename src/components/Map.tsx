@@ -8,7 +8,6 @@ import maplibregl, {
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-// Define GeoJSON feature structure
 interface GeoJSONFeature {
   type: "Feature";
   geometry: {
@@ -19,6 +18,13 @@ interface GeoJSONFeature {
     [key: string]: string;
   };
 }
+
+interface PointProperties {
+  Lokasi: string;
+  Status: string;
+  MHI: number;
+}
+
 
 export default function Map() {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -155,7 +161,7 @@ export default function Map() {
         map.current.on("click", "mangrove-points-layer", (e: MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) => {
           const f = e.features?.[0];
           if (!f) return;
-          const props = f.properties as { [key: string]: any };
+          const props = f.properties as PointProperties;
 
           map.current!.flyTo({
             center: e.lngLat,
@@ -168,7 +174,7 @@ export default function Map() {
             .setHTML(`
               <strong>${props?.Lokasi}</strong><br/>
               Status: ${props?.Status}<br/>
-              MHI: ${parseFloat(props?.MHI).toFixed(2)}%
+              MHI: ${props?.MHI.toFixed(2)}%
             `)
             .addTo(map.current!);
         });
