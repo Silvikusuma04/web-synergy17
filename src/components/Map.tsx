@@ -4,8 +4,21 @@ import { useEffect, useRef } from "react";
 import maplibregl, {
   Map as MapLibreMap,
   NavigationControl,
+  MapMouseEvent,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+// Define GeoJSON feature structure
+interface GeoJSONFeature {
+  type: "Feature";
+  geometry: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+  properties: {
+    [key: string]: string;
+  };
+}
 
 export default function Map() {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -19,7 +32,7 @@ export default function Map() {
       style:
         "https://api.maptiler.com/maps/streets-v2/style.json?key=nJhlM90Zjv4SvwXxP9aW",
       center: [119.8, -8.68],
-      zoom: 10
+      zoom: 10,
     });
 
     map.current.addControl(new NavigationControl(), "top-right");
@@ -81,25 +94,25 @@ export default function Map() {
         const pointData = await pointRes.json();
 
         const jitter = (i: number) => {
-          const offset = ((i % 5) - 2) * 0.0005; 
+          const offset = ((i % 5) - 2) * 0.0005;
           return offset;
         };
 
-        const features = pointData.features.map((f: any, i: number) => {
+        const features = pointData.features.map((f: GeoJSONFeature, i: number) => {
           const mhi = parseFloat(f.properties?.["MHI (%)"] ?? "0");
           const status =
             mhi >= 70 ? "Excellent" : mhi >= 50 ? "Moderate" : "Poor";
 
           const originalCoords = f.geometry.coordinates;
-          const jitteredCoords = [
+          const jitteredCoords: [number, number] = [
             originalCoords[0] + jitter(i),
             originalCoords[1] + jitter(i + 1),
           ];
 
           return {
-            type: "Feature",
+            type: "Feature" as const,
             geometry: {
-              type: "Point",
+              type: "Point" as const,
               coordinates: jitteredCoords,
             },
             properties: {
@@ -139,25 +152,23 @@ export default function Map() {
         });
 
         // INTERAKSI POPUP + ZOOM
-        map.current.on("click", "mangrove-points-layer", (e) => {
+        map.current.on("click", "mangrove-points-layer", (e: MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) => {
           const f = e.features?.[0];
           if (!f) return;
-          const props = f.properties;
+          const props = f.properties as { [key: string]: any };
 
-          // Zoom to point
           map.current!.flyTo({
             center: e.lngLat,
             zoom: 14,
             essential: true,
           });
 
-          // Show popup
           new maplibregl.Popup()
             .setLngLat(e.lngLat)
             .setHTML(`
               <strong>${props?.Lokasi}</strong><br/>
               Status: ${props?.Status}<br/>
-              MHI: ${props?.MHI?.toFixed(2)}%
+              MHI: ${parseFloat(props?.MHI).toFixed(2)}%
             `)
             .addTo(map.current!);
         });
